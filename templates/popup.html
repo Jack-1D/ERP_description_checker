@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <style>
+    textarea {
+      resize: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>IPC Transformer:</h2>
+  <form method="post">
+    <input name="name" type="text">
+    <input type="submit" value="Transfer">
+  </form>
+  <br />
+  <div style="background-color:red;display: flex;flex-direction:row;style=" position:relative;"">
+    <div style="display: flex;flex-direction:column;">
+      <div>
+        <h4>BOM:</h4>
+      </div>
+      <div>
+        <textarea rows="10" cols="100" READONLY>{% for row in content %}{{row}}&#10{% endfor %}</textarea>
+      </div>
+    </div>
+    <div style="display: flex;flex-direction:column;">
+      <div>
+        <h4>number:</h4>
+      </div>
+      <div>
+        <textarea rows="10" cols="30" READONLY>a&#10;s&#10;d</textarea>
+      </div>
+    </div>
+  </div>
+
+
+
+</body>
+
+</html>
