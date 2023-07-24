@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# virtual environment
+erp_checker
+
 # Distribution / packaging
 __pycache__
 .Python
