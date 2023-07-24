@@ -1,9 +1,8 @@
 from comparison import compare_motherboard
 from connect import Cursor
 
-factory = "SHMC"
 
-def motherboard_checker(name: str, cursor: Cursor) -> tuple[bool, str]:
+def motherboard_checker(cursor: Cursor, name: str, factory: str) -> tuple[bool, str]:
     name = name.split('*ERP')
     name.pop(2)
     name.pop(0)

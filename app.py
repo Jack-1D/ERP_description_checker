@@ -9,8 +9,9 @@ app = Flask(__name__)
 def hello():
     if request.method == "POST":
         input_string = request.form["name"]
-        content = main_checker(input_string)
-        return render_template('popup.html',content=content)
+        factory = "TPMC" if len(request.form.getlist('factory')) != 0 else "SHMC"
+        content = main_checker(input_string, factory)
+        return render_template('popup.html',content=content, factory=factory)
     return render_template('popup.html')
 
 if __name__ == "__main__":
