@@ -1,18 +1,19 @@
 from flask import Flask, render_template, request
+from flask_cors import CORS
 from search import main_checker
 import json
 
-content = []
-
 app = Flask(__name__)
-@app.route("/",methods=["POST","GET"])
+CORS(app)
+@app.route("/",methods=["POST", "GET"])
 def hello():
     if request.method == "POST":
-        input_string = request.form["name"]
-        factory = "TPMC" if len(request.form.getlist('factory')) != 0 else "SHMC"
-        content = main_checker(input_string, factory)
-        return render_template('popup.html',content=content, factory=factory)
-    return render_template('popup.html')
+        # print(json.loads(list(request.form.keys())[0])["BOM"])
+        erp = json.loads(list(request.form.keys())[0])["erp"]
+        factory = json.loads(list(request.form.keys())[0])["factory"]
+        content = main_checker(erp, factory)
+        return json.dumps({"error_msg": content})
+    return json.dumps({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8888)
+    app.run(ssl_context='adhoc', host='0.0.0.0')

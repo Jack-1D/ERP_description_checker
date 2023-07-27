@@ -1,8 +1,8 @@
-from comparison import compare_motherboard
+from comparison import compare_motherboard, compare_CPU
 from connect import Cursor
 
 
-def motherboard_checker(cursor: Cursor, name: str, factory: str) -> tuple[bool, str]:
+def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
     name = name.split('*ERP')
     name.pop(2)
     name.pop(0)
@@ -39,9 +39,16 @@ def motherboard_checker(cursor: Cursor, name: str, factory: str) -> tuple[bool, 
         elif device.find("x") != -1:
             device = device.split("x")
             check_devices_to_dict.append({"device":device[1].upper(), "number": int(device[0])})
-
+    # 主板代號與ERP description檢查
     ERP_part_name_split = ERP_part_name.split("-")
-    description = ERP_part_name_split[0][:2]
+    motherboard_description = ERP_part_name_split[0][:2]
     if ERP_part_name_split[1].find("MXM") != -1:
-        description += "MXM"
-    return compare_motherboard(cursor, factory, description, check_devices_to_dict)
+        motherboard_description += "MXM"
+    mb_name_result = compare_motherboard(cursor, factory, motherboard_description, check_devices_to_dict)
+    
+    # CPU代號與ERP description檢查
+    cpu_description = ERP_description.split(",")[0]
+    token = ERP_part_name_split[0][3]
+    cpu_name_result = compare_CPU(cursor, token, cpu_description)
+    
+    return {"motherboard":mb_name_result, "CPU":cpu_name_result}

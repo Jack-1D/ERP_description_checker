@@ -1,13 +1,11 @@
 from connect import open_connect, close_connect
-from checker import motherboard_checker
+from checker import name_checker
 
-def main_checker(name: str, factory: str) -> list:
+def main_checker(name: str, factory: str) -> dict:
     connection, cursor = open_connect()
-    motherboard_check_result, error_msg = motherboard_checker(cursor, name, factory)
-    print(motherboard_check_result)
-    print(error_msg)
+    all_name_check_result = name_checker(cursor, name, factory)
     
     
     # print(check_devices_to_dict)
     close_connect(connection, cursor)
-    return [error_msg]
+    return all_name_check_result

@@ -10,7 +10,7 @@ def open_connect() -> tuple[Connection, Cursor]:
         database='std_rule', # 資料庫名稱
         user='root',        # 帳號
         password='adlink')  # 密碼
-    cursor = connection.cursor()
+    cursor = connection.cursor(dictionary=True)
     return connection, cursor
 
 def close_connect(connection: Connection, cursor: Cursor) -> None:
