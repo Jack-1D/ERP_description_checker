@@ -34,7 +34,7 @@ def compare_CPU(cursor: Cursor, token: str, cpu_description: str) -> dict:
         return {"status":False, "error_msg":"CPU name error.", "item_no":item_no}
     return {"status":True, "error_msg":"", "item_no":item_no}
 
-def compare_backplane(cursor: Cursor, bp_token: int, e_token: int, comparison_dict_list: list, is_MXM: bool, factory: str):
+def compare_backplane(cursor: Cursor, bp_token: int, e_token: int, comparison_dict_list: list, is_MXM: bool, factory: str) -> dict:
     cursor.execute(f"SELECT * FROM backplane_parts WHERE factory = '{factory}'")
     backplane_infos = cursor.fetchall()
 
@@ -50,3 +50,12 @@ def compare_backplane(cursor: Cursor, bp_token: int, e_token: int, comparison_di
     if e_token != sum(device['number'] for device in comparison_dict_list if device['device'].find("PCIex") != -1) - is_MXM:
         return {"status":False, "error_msg":"e槽數錯誤", "item_no":item_no}
     return {"status":True, "error_msg":"", "item_no":item_no}
+
+def compare_memory(description_GB: int, comparison_GB: int) -> dict:
+    if description_GB == None:
+        pass
+    if comparison_GB == None:
+        pass
+    print(description_GB)
+    print(comparison_GB)
+    return
