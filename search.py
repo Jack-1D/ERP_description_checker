@@ -6,6 +6,6 @@ def main_checker(name: str, factory: str) -> dict:
     all_name_check_result = name_checker(cursor, name, factory)
     
     
-    # print(check_devices_to_dict)
+    print(all_name_check_result)
     close_connect(connection, cursor)
     return all_name_check_result

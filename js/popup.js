@@ -5,7 +5,7 @@ const connect_button = document.getElementById("connect");
 const output_box = document.getElementById("output_box");
 
 function openURL() {
-    window.open("https://172.30.200.103:5000/");
+    window.open("https://172.30.202.88:5000/");
 }
 localStorage.setItem("connected", "no");
 connect_button.addEventListener("click", openURL);
@@ -72,12 +72,12 @@ function analyze(erp, factory) {
     console.clear();
     console.log(BOM);
 
-    check_result = fetch("https://172.30.200.103:5000/", {
+    check_result = fetch("https://172.30.202.88:5000/", {
         method: 'POST',
         headers: { "Content-type": "application/x-www-form-urlencoded; charset=UTF-8" },
         body: JSON.stringify({
             'BOM': BOM,
-            "erp": erp,
+            "erp": erp.replace(/[+]/g, "plus"),
             "factory": factory
         })
     })

@@ -9,7 +9,7 @@ CORS(app)
 def hello():
     if request.method == "POST":
         # print(json.loads(list(request.form.keys())[0])["BOM"])
-        erp = json.loads(list(request.form.keys())[0])["erp"]
+        erp = json.loads(list(request.form.keys())[0])["erp"].replace('plus','+')
         factory = json.loads(list(request.form.keys())[0])["factory"]
         content = main_checker(erp, factory)
         return json.dumps({"error_msg": content})
