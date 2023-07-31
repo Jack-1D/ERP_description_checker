@@ -30,7 +30,7 @@ def compare_CPU(cursor: Cursor, token: str, cpu_description: str) -> dict:
         return {"status":False, "error_msg":"CPU token not exists.", "item_no":None}
     item_no = cpu_info["item_no"]
     cpu_name = cpu_info["name"]
-    if cpu_description != cpu_name:
+    if cpu_description.find(cpu_name) == -1:
         return {"status":False, "error_msg":"CPU name error.", "item_no":item_no}
     return {"status":True, "error_msg":"", "item_no":item_no}
 
