@@ -1,3 +1,6 @@
+'''
+主程式: js直接呼叫
+'''
 from connect import open_connect, close_connect
 from checker import name_checker
 

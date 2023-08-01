@@ -1,3 +1,6 @@
+'''
+處理各料件名稱比較
+'''
 import mysql.connector
 import json
 from typing import NewType
@@ -53,9 +56,18 @@ def compare_backplane(cursor: Cursor, bp_token: int, e_token: int, comparison_di
 
 def compare_memory(description_GB: int, comparison_GB: int) -> dict:
     if description_GB == None:
-        pass
+        return {"status":False, "error_msg":"Memory description error.", "item_no":None}
     if comparison_GB == None:
-        pass
-    print(description_GB)
-    print(comparison_GB)
-    return
+        return {"status":False, "error_msg":"Memory part name error.", "item_no":None}
+    if description_GB != comparison_GB:
+        return {"status":False, "error_msg":"Memory not match.", "item_no":None}
+    return {"status":True, "error_msg":"", "item_no":None}
+
+def compare_storage(description_GB: int, comparison_GB: int) -> dict:
+    if description_GB == None:
+        return {"status":False, "error_msg":"Storage description error.", "item_no":None}
+    if comparison_GB == None:
+        return {"status":False, "error_msg":"Storage part name error.", "item_no":None}
+    if description_GB != comparison_GB:
+        return {"status":False, "error_msg":"Storage not match.", "item_no":None}
+    return {"status":True, "error_msg":"", "item_no":None}

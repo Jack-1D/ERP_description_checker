@@ -1,4 +1,7 @@
-from comparison import compare_motherboard, compare_CPU, compare_backplane, compare_memory
+'''
+主要處理字串後丟入comparison做比較
+'''
+from comparison import compare_motherboard, compare_CPU, compare_backplane, compare_memory, compare_storage
 from connect import Cursor
 import re
 
@@ -84,6 +87,8 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
         bp_check_devices_to_dict = [{"device":"PCI","number":device['number']} if device['device'].find("PCIs") != -1 else {"device":device["device"],"number":device['number']} for device in bp_check_devices_to_dict]
         bp_name_result = compare_backplane(cursor, bp_token, e_token, bp_check_devices_to_dict, is_MXM, factory)
 
+    total_check_result = {"motherboard":mb_name_result, "CPU":cpu_name_result, "backplane":bp_name_result}
+
     # 其他零件檢查--------------------------------------------------------------------------------------
     other_devices = other_devices.split(",")
     other_devices = [device.strip(' ') for device in other_devices]
@@ -110,6 +115,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
             other_devices_to_dict.append({"device":device[1].upper().strip(' '), "number": int(device[0]) if device[0].find('+') \
                                           == -1 else eval(device[0][device[0].find('('):device[0].find(')')+1])})
     
+    part_name_end_pointer = ERP_part_name.find('/')
     for device in other_devices_to_dict:
         # 處理memory
         if device['device'].find("DDR") != -1:
@@ -121,11 +127,33 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
             if memory_pattern.search(device['device']) != None: memory_description_GB = int(memory_pattern.search(device['device']).groups()[0]) * device['number'] * 1000
             # MVP的memory大小
             memory_pattern = re.compile(r'M(\d+)G')
-            if memory_pattern.search(ERP_part_name) != None: memory_comparison_GB = int(memory_pattern.search(ERP_part_name).groups()[0])
+            if memory_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
+                memory_comparison_GB = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0])
+                part_name_end_pointer = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             memory_pattern = re.compile(r'M(\d+)T')
-            if memory_pattern.search(ERP_part_name) != None: memory_comparison_GB = int(memory_pattern.search(ERP_part_name).groups()[0]) * 1000
-            
+            if memory_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
+                memory_comparison_GB = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1000
+                part_name_end_pointer = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             memory_name_result = compare_memory(memory_description_GB, memory_comparison_GB)
+            total_check_result["memory"] = memory_name_result
+        # 處理storage
+        if device['device'].find("SSD") != -1:
+            (storage_description_GB, storage_comparison_GB) = (0, 0)
+            # description的memory大小
+            storage_pattern = re.compile(r'(\d+)G')
+            if storage_pattern.search(device['device']) != None: storage_description_GB = int(storage_pattern.search(device['device']).groups()[0]) * device['number']
+            storage_pattern = re.compile(r'(\d+)T')
+            if storage_pattern.search(device['device']) != None: storage_description_GB = int(storage_pattern.search(device['device']).groups()[0]) * device['number'] * 1000
+            # MVP的storage大小
+            storage_pattern = re.compile(r'(\d+)G')
+            if storage_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
+                storage_comparison_GB = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0])
+                part_name_end_pointer = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
+            storage_pattern = re.compile(r'(\d+)T')
+            if storage_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
+                storage_comparison_GB = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1000
+                part_name_end_pointer = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
+            storage_name_result = compare_storage(storage_description_GB, storage_comparison_GB)
+            total_check_result["storage"] = storage_name_result
 
-
-    return {"motherboard":mb_name_result, "CPU":cpu_name_result, "backplane":bp_name_result}
+    return total_check_result
