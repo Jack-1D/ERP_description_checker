@@ -13,3 +13,12 @@ erp_checker\Scripts\activate.bat
 pip install -r requirements.txt
 
 ```
+
+### 執行程式
+``` bash
+#若指令使用python3，輸入這行
+python3 app.py
+#若指令使用python，輸入這行
+python app.py
+
+```
