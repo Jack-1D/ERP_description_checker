@@ -3,6 +3,9 @@
     "name": "93 checker",
     "description": "PLM checker",
     "version": "1.0",
+    "background": {
+        "service_worker": "background.js"
+    },
     "action": {
         "default_popup": "templates/popup.html",
         "default_icon": {
@@ -24,8 +27,7 @@
         "scripting",
         "debugger",
         "windows",
-        "tabs",
-        "http://localhost/*"
+        "tabs"
     ],
     "host_permissions": [
         "<all_urls>"

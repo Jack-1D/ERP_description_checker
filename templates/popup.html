@@ -22,46 +22,70 @@
 </head>
 
 <body>
-  <h2>IPC Transformer:</h2>
-  <form method="post">
-    <input name="name" id="erp" type="text" size="50"
-      style="height:25px;font-size: 20px;float: left;margin-right: 20px;">
-    <div style="font-size: 20px;float: left;">
-      SHMC
-      <label class="switch">
-        <input type="checkbox" id="factory" name="factory">
-        <span class="slider round"></span>
-      </label>
-      TPMC
-    </div>
-    <button id="connect"
-      style="float: left;margin-left: 20px;margin-top: 5px;border-color: blue;background-color: white;">need
-      connect</button>
-    <div style="clear:both;"></div>
-    </br>
-    <input type="submit" id="submit" value="Transfer">
-  </form>
-  <br />
-  <div style="background-color:red;display: flex;flex-direction:row;style=" position:relative;"">
-    <div style="display: flex;flex-direction:column;">
-      <div>
-        <h4>BOM:</h4>
+  <div style="background-color: #ECFFFF;">
+    <h2>IPC Transformer:</h2>
+    <form method="post">
+      <input name="name" id="erp" type="text" size="50"
+        style="height:25px;font-size: 20px;float: left;margin-right: 20px;" autocomplete="off">
+      <div style="font-size: 20px;float: left;">
+        SHMC
+        <label class="switch">
+          <input type="checkbox" id="factory" name="factory">
+          <span class="slider round"></span>
+        </label>
+        TPMC
       </div>
-      <div>
-        <textarea id="output_box" rows="10" cols="100" READONLY></textarea>
+      <button id="connect"
+        style="float: left;margin-left: 20px;margin-top: 5px;border-color: blue;background-color: white;">need
+        connect</button>
+      <div style="clear:both;"></div>
+      </br>
+      <input type="submit" id="submit_button" value="Transfer">
+    </form>
+    <br />
+    <div style="display: flex;flex-direction:row;position:relative;">
+      <div style="display: flex;flex-direction:column;">
+        <div style="text-align: center;">
+          <h2>Step 1: Name Check</h2>
+        </div>
+        <div style="text-align: center;margin-left: 100px;">
+          <div id="name_result" style="width: 100px;height: 30px;border: solid #000;background-color: #F0F0F0;">
+            <div id="name_result_text" style="font-size: 20px;height: 30px;line-height: 30px;">
+              result
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 10px;margin-left: 10px;">
+          <div style="width: 280px;height: 300px;border: solid #000;background-color: white;">
+            <div id="name_check_error" style="font-size: 20px;text-align: center;">
+              result
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div style="display: flex;flex-direction:column;">
-      <div>
-        <h4>number:</h4>
-      </div>
-      <div>
-        <textarea rows="10" cols="30" READONLY>a&#10;s&#10;d</textarea>
+      <div style="display: flex;flex-direction:column;">
+        <div style="text-align: center;">
+          <h2>Step 2: BOM Check</h2>
+        </div>
+        <div style="text-align: center;margin-left: 100px;">
+          <div style="width: 100px;height: 30px;border: solid #000;background-color: #F0F0F0;">
+            <div style="font-size: 20px;height: 30px;line-height: 30px;">
+              result
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 10px;margin-left: 10px;">
+          <div style="width: 280px;height: 300px;border: solid #000;background-color: white;">
+            <div style="font-size: 20px;text-align: center;">
+              result
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-  <script src="/js/popup.js"></script>
 
+  <script src="/js/popup.js"></script>
 </body>
 
 </html>
