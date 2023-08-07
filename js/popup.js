@@ -3,7 +3,8 @@ const erp_input = document.getElementById("erp");
 const factory_input = document.getElementById("factory");
 const connect_button = document.getElementById("connect");
 const name_check_output_box = document.getElementById("name_check_error");
-// const name_result = document.getElementById("name_result");
+const name_result_color = document.getElementById("name_result");
+const name_result_text = document.getElementById("name_result_text");
 
 function openURL() {
     window.open("https://172.30.202.88:5000/");
@@ -28,14 +29,6 @@ connect_button.addEventListener("click", openURL);
 //     connect_button.style = "display:";
 // }
 
-fetch('../check_result.json')
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);
-        handle_result(data);
-    });
-
-
 function saveERP(e) {
     let erp = erp_input.value;
     let factory = factory_input.checked;
@@ -45,8 +38,12 @@ function saveERP(e) {
 erp_input.value = localStorage.getItem('erp');
 factory_input.checked = localStorage.getItem('factory') == 'true' ? true : false;
 
-submit_button.addEventListener("click", saveERP);
-submit_button.addEventListener("click", async () => {
+submit_button.addEventListener("click", (e) => {
+    e.preventDefault();
+    saveERP(e);
+});
+submit_button.addEventListener("click", async (e) => {
+    e.preventDefault();
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -54,21 +51,20 @@ submit_button.addEventListener("click", async () => {
         args: [erp_input.value, factory_input.checked ? "TPMC" : "SHMC"]
     },
 
-        (result) => {
-            console.log("aaaaaa");
-            console.log(result);
-            // console.log("analyze_result", analyze_result);
-            // str = "";
-            // for (const [key, value] of Object.entries(analyze_result)) {
-            //     str += analyze_result[key]["error_msg"];
-            // }
-            // name_check_output_box.innerText = str;
-            // localStorage.setItem("name_error", str);
-            // console.log("aaa");
-            // name_check_output_box.innerText = result;
+        (analyze_result) => {
+            let name_check_result = true;
+            let name_check_result_error_msg = "";
 
-            // localStorage.setItem('result', JSON.stringify(result["error_msg"]));
-            // erp_input.value = JSON.parse(localStorage.getItem('result'));
+            console.log(analyze_result[0]);
+            for (const [key, value] of Object.entries(analyze_result[0].result)) {
+                if (!value["status"]) {
+                    name_check_result = false;
+                    name_check_result_error_msg += value["error_msg"] + '\n';
+                }
+            }
+            name_result_color.style.backgroundColor = name_check_result ? '#53FF53' : '#FF2D2D';
+            name_result_text.innerText = name_check_result ? 'PASS' : 'FAIL';
+            name_check_output_box.innerText = name_check_result_error_msg;
         });
 
 });
@@ -105,27 +101,7 @@ function analyze(erp, factory) {
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            // str = "";
-            // for (const [key, value] of Object.entries(data)) {
-            //     str += data[key]["error_msg"];
-            // }
-            // localStorage.setItem("name_error", str);
             return data;
         });
-    console.log(check_result);
     return check_result;
-}
-
-function handle_result(result) {
-    let name_check_result_color = '#53FF53';
-    let name_check_result_error_msg = '';
-    for (const [component, check_result] of Object.entries(result)) {
-        if (!check_result["status"]) {
-            name_check_result_color = '#FF2D2D';
-            name_check_result_error_msg += check_result["error_msg"] + '\n';
-        }
-    }
-    document.getElementById("name_result").style.backgroundColor = name_check_result_color;
-    document.getElementById("name_result_text").innerText = name_check_result_color == '#53FF53' ? "Pass" : "Fail";
-    name_check_output_box.innerText = name_check_result_error_msg;
 }
