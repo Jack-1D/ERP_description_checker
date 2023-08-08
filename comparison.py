@@ -9,17 +9,29 @@ Cursor = NewType('Cursor',mysql.connector.cursor_cext.CMySQLCursor)
 def compare_motherboard(cursor: Cursor, factory: str, description: str, comparison_dict_list: list) -> dict:
     cursor.execute(f"SELECT * FROM description_to_motherboard WHERE factory = '{factory}' AND description = '{description}';")
     # 處理是否有登記資料
-    item_no = cursor.fetchone()
+    item_no = cursor.fetchall()
     if item_no == None:
         return {"status":False, "error_msg":"Factory or MVP name might be wrong.", "item_no":None}
     else:
-        item_no = item_no["item_no"]
+        item_no = [item['item_no'] for item in item_no]
 
-    cursor.execute(f"SELECT * FROM motherboard_parts WHERE item_no = '{item_no}';")
-    parts = cursor.fetchone()
+    item_no_string = ", ".join(f'\'{item}\'' for item in item_no)
+    cursor.execute(f"SELECT * FROM motherboard_parts WHERE item_no IN ({item_no_string});")
+    parts = cursor.fetchall()
     if parts == None:
-        return {"status":False, "error_msg":"This motherboard's parts might not in database.", "item_no":item_no}
-    all_parts = [{'device':part[0].upper(), 'number':int(part[1])} for part in json.loads(parts["parts"])]
+        return {"status":False, "error_msg":"This motherboard's parts might not in database.", "item_no":None}
+
+    com_num = [device['number'] for device in comparison_dict_list if device['device'] == "COM"]
+    item_no = []
+    for part in parts:
+        part_dict = {p[0]:p[1] for p in json.loads(part['parts'])}
+        if json.loads(part['parts'])[0][0] == comparison_dict_list[0]['device'] and int(part_dict['COM']) == int(com_num[0]):
+            item_no.append(part['item_no'])
+    if len(item_no) > 1 or len(item_no) == 0:
+        return {"status":False, "error_msg":"Ambiguous motherboard.", "item_no":None}
+    
+    item_no = item_no[0]
+    all_parts = [{'device':p[0].upper(), 'number':int(p[1])} for part in parts if part['item_no'] == item_no for p in json.loads(part["parts"])]
     diff = [part['device'] for part in comparison_dict_list if part not in all_parts]
     # print(diff)
     if len(diff) != 0:

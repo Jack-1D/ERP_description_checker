@@ -1,6 +1,7 @@
 const submit_button = document.getElementById("submit_button");
 const erp_input = document.getElementById("erp");
 const factory_input = document.getElementById("factory");
+const product_type_input = document.getElementById("product_type");
 const connect_button = document.getElementById("connect");
 const name_check_output_box = document.getElementById("name_check_error");
 const name_result_color = document.getElementById("name_result");
@@ -32,11 +33,14 @@ connect_button.addEventListener("click", openURL);
 function saveERP(e) {
     let erp = erp_input.value;
     let factory = factory_input.checked;
+    let product_type = product_type_input.checked;
     localStorage.setItem('erp', erp);
     localStorage.setItem('factory', factory.toString());
+    localStorage.setItem('product_type', product_type.toString());
 }
 erp_input.value = localStorage.getItem('erp');
 factory_input.checked = localStorage.getItem('factory') == 'true' ? true : false;
+product_type_input.checked = localStorage.getItem('product_type') == 'true' ? true : false;
 
 
 submit_button.addEventListener("click", (e) => {

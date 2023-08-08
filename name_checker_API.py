@@ -83,7 +83,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
         bp_check_devices = [device for device in check_devices if device.find("PCI") != -1 and device.find("mPCIe") == -1]
         bp_check_devices = [item.replace(" ","") for device in bp_check_devices for item in device.split('+')]
         bp_check_devices_to_dict = [{"device":device,"number":1} if device.find("PCI") == 0 else \
-                                    {"device":device[device.find("PCI"):],"number":int(device[:device.find("PCI")-1])} \
+                                    {"device":device[device.find("PCI"):],"number":int(device[:device.find("PCI")])} \
                                         for device in bp_check_devices]
         # 名稱標準化
         bp_check_devices_to_dict = [{"device":"PCI","number":device['number']} if device['device'].find("PCIs") != -1 \
@@ -163,8 +163,4 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
             storage_name_result = compare_storage(storage_description_GB, storage_comparison_GB)
             total_check_result["storage"] = storage_name_result
 
-    return total_check_result
-
-def BOM_checker(factory: str, bom: list) -> dict:
-    all_item_no = [item['itemNumber'] for item in bom]
-    
+    return total_check_result    

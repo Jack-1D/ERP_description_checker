@@ -2,7 +2,8 @@
 主程式: js直接呼叫
 '''
 from connect import open_connect, close_connect
-from checker import name_checker, BOM_checker
+from name_checker_API import name_checker
+from bom_checker_API import BOM_checker
 
 def main_checker(name: str, factory: str, bom: list) -> dict:
     connection, cursor = open_connect()
