@@ -84,7 +84,7 @@ def compare_memory(description_GB: int, comparison_GB: int) -> dict:
         return {"status":False, "error_msg":"Memory part name error.", "item_no":None}
     if description_GB != comparison_GB:
         return {"status":False, "error_msg":"Memory not match.", "item_no":None}
-    return {"status":True, "error_msg":"", "item_no":None}
+    return {"status":True, "error_msg":"", "item_no":None, "capacity":description_GB}
 
 def compare_storage(description_GB: int, comparison_GB: int) -> dict:
     if description_GB == None:
@@ -93,4 +93,4 @@ def compare_storage(description_GB: int, comparison_GB: int) -> dict:
         return {"status":False, "error_msg":"Storage part name error.", "item_no":None}
     if description_GB != comparison_GB:
         return {"status":False, "error_msg":"Storage not match.", "item_no":None}
-    return {"status":True, "error_msg":"", "item_no":None}
+    return {"status":True, "error_msg":"", "item_no":None, "capacity":description_GB}

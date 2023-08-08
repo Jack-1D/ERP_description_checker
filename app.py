@@ -12,7 +12,8 @@ def hello():
         bom = json.loads(list(request.form.keys())[0])["BOM"]
         erp = json.loads(list(request.form.keys())[0])["erp"].replace('plus','+')
         factory = json.loads(list(request.form.keys())[0])["factory"]
-        content = main_checker(erp, factory, bom)
+        product_type = json.loads(list(request.form.keys())[0])["product_type"]
+        content = main_checker(erp, factory, bom, product_type)
         return json.dumps(content)
     return json.dumps(content)
 

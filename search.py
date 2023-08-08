@@ -5,10 +5,10 @@ from connect import open_connect, close_connect
 from name_check import name_checker_API
 from bom_check import bom_checker_API
 
-def main_checker(name: str, factory: str, bom: list) -> dict:
+def main_checker(name: str, factory: str, bom: list, product_type: str) -> dict:
     connection, cursor = open_connect()
     all_name_check_result = name_checker_API.name_checker(cursor, name, factory)
-    all_BOM_check_result = bom_checker_API.BOM_checker(cursor, factory, bom)
+    all_BOM_check_result = bom_checker_API.BOM_checker(cursor, factory, bom, product_type)
     
     
     print(all_name_check_result)
