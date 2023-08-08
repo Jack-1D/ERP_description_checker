@@ -38,6 +38,7 @@ function saveERP(e) {
 erp_input.value = localStorage.getItem('erp');
 factory_input.checked = localStorage.getItem('factory') == 'true' ? true : false;
 
+
 submit_button.addEventListener("click", (e) => {
     e.preventDefault();
     saveERP(e);
@@ -56,7 +57,7 @@ submit_button.addEventListener("click", async (e) => {
             let name_check_result_error_msg = "";
 
             console.log(analyze_result[0]);
-            for (const [key, value] of Object.entries(analyze_result[0].result)) {
+            for (const [key, value] of Object.entries(analyze_result[0].result.name_check_result)) {
                 if (!value["status"]) {
                     name_check_result = false;
                     name_check_result_error_msg += value["error_msg"] + '\n';

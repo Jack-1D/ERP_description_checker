@@ -5,6 +5,7 @@ from comparison import compare_motherboard, compare_CPU, compare_backplane, comp
 from connect import Cursor
 import re
 
+is_MXM = False
 
 def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
     name = name.split('*ERP')
@@ -84,7 +85,13 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
         bp_check_devices_to_dict = [{"device":device,"number":1} if device.find("PCI") == 0 else \
                                     {"device":device[device.find("PCI"):],"number":int(device[:device.find("PCI")-1])} \
                                         for device in bp_check_devices]
-        bp_check_devices_to_dict = [{"device":"PCI","number":device['number']} if device['device'].find("PCIs") != -1 else {"device":device["device"],"number":device['number']} for device in bp_check_devices_to_dict]
+        # 名稱標準化
+        bp_check_devices_to_dict = [{"device":"PCI","number":device['number']} if device['device'].find("PCIs") != -1 \
+                                    else {"device":device["device"],"number":device['number']} for device in bp_check_devices_to_dict]
+        bp_check_devices_to_dict = [{"device":"PCIex4","number":device['number']} if device['device'].find("4") != -1 \
+                                    else {"device":device["device"],"number":device['number']} for device in bp_check_devices_to_dict]
+        bp_check_devices_to_dict = [{"device":"PCIex16","number":device['number']} if device['device'].find("16") != -1 \
+                                    else {"device":device["device"],"number":device['number']} for device in bp_check_devices_to_dict]
         bp_name_result = compare_backplane(cursor, bp_token, e_token, bp_check_devices_to_dict, is_MXM, factory)
 
     total_check_result = {"motherboard":mb_name_result, "CPU":cpu_name_result, "backplane":bp_name_result}
@@ -157,3 +164,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
             total_check_result["storage"] = storage_name_result
 
     return total_check_result
+
+def BOM_checker(factory: str, bom: list) -> dict:
+    all_item_no = [item['itemNumber'] for item in bom]
+    

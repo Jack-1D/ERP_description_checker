@@ -40,6 +40,16 @@ def compare_CPU(cursor: Cursor, token: str, cpu_description: str) -> dict:
 def compare_backplane(cursor: Cursor, bp_token: int, e_token: int, comparison_dict_list: list, is_MXM: bool, factory: str) -> dict:
     cursor.execute(f"SELECT * FROM backplane_parts WHERE factory = '{factory}'")
     backplane_infos = cursor.fetchall()
+    # 若是MXM須加回一個PCIex16再比較，且這裡的list比較裡面的字典順序不能變
+    inside = False
+    if is_MXM:
+        for item in comparison_dict_list:
+            if "PCIex16" in [item.values()]:
+                inside = True
+                item['number'] += 1
+                break
+        if not inside:
+            comparison_dict_list.insert(0,{"device":"PCIex16", "number":1})
 
     item_no = next((backplane['item_no'] for backplane in backplane_infos if \
                 [{"device": part[0], "number": int(part[1])} for part in json.loads(backplane['parts'])] == comparison_dict_list), "")

@@ -2,7 +2,6 @@ from flask import Flask, request
 from flask_cors import CORS
 from search import main_checker
 import json
-import os
 
 app = Flask(__name__)
 CORS(app)
@@ -10,9 +9,10 @@ CORS(app)
 def hello():
     content = {}
     if request.method == "POST":
+        bom = json.loads(list(request.form.keys())[0])["BOM"]
         erp = json.loads(list(request.form.keys())[0])["erp"].replace('plus','+')
         factory = json.loads(list(request.form.keys())[0])["factory"]
-        content = main_checker(erp, factory)
+        content = main_checker(erp, factory, bom)
         return json.dumps(content)
     return json.dumps(content)
 

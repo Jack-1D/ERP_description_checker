@@ -4,7 +4,7 @@
     "description": "PLM checker",
     "version": "1.0",
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "/js/background.js"
     },
     "action": {
         "default_popup": "templates/popup.html",
