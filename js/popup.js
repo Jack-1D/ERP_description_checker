@@ -53,7 +53,7 @@ submit_button.addEventListener("click", async (e) => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: analyze,
-        args: [erp_input.value, factory_input.checked ? "TPMC" : "SHMC", product_type_input.checked ? "0" : "1"]
+        args: [erp_input.value, factory_input.checked ? "TPMC" : "SHMC", product_type_input.checked ? "1" : "0"]
     },
 
         (analyze_result) => {

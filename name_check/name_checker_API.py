@@ -164,4 +164,4 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
             storage_name_result = compare_storage(storage_description_GB, storage_comparison_GB)
             total_check_result["storage"] = storage_name_result
 
-    return total_check_result    
+    return total_check_result, {"is_MXM":is_MXM, "description":motherboard_description}

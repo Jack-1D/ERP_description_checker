@@ -34,3 +34,6 @@ def check_memory():
 
 def check_storage():
     pass
+
+def check_thermal_parts():
+    pass
