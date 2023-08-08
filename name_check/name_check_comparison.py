@@ -1,5 +1,6 @@
 '''
 處理各料件名稱比較
+目的:為name_checker_API的子程式
 '''
 import mysql.connector
 import json

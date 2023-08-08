@@ -1,7 +1,8 @@
 '''
-主要處理字串後丟入comparison做比較
+做ERP name檢查
+目的:主要處理字串後丟入comparison做比較
 '''
-from comparison import compare_motherboard, compare_CPU, compare_backplane, compare_memory, compare_storage
+from name_check.name_check_comparison import compare_motherboard, compare_CPU, compare_backplane, compare_memory, compare_storage
 from connect import Cursor
 import re
 

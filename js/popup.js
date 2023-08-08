@@ -53,7 +53,7 @@ submit_button.addEventListener("click", async (e) => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: analyze,
-        args: [erp_input.value, factory_input.checked ? "TPMC" : "SHMC"]
+        args: [erp_input.value, factory_input.checked ? "TPMC" : "SHMC", product_type_input.checked ? "0" : "1"]
     },
 
         (analyze_result) => {
@@ -74,7 +74,7 @@ submit_button.addEventListener("click", async (e) => {
 
 });
 
-function analyze(erp, factory) {
+function analyze(erp, factory, product_type) {
     var BOM = [];
     var Item = document.getElementById("ITEMTABLE_BOM").getElementsByClassName("GMPageOne")[1].getElementsByClassName("GMSection")[0].getElementsByTagName("tbody")[0].children;
     for (var i = 0; i < Item.length; i++) {
@@ -100,7 +100,8 @@ function analyze(erp, factory) {
         body: JSON.stringify({
             'BOM': BOM,
             "erp": erp.replace(/[+]/g, "plus"),
-            "factory": factory
+            "factory": factory,
+            "product_type": product_type
         })
     })
         .then(response => response.json())
