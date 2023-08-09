@@ -13,15 +13,29 @@ class status:
             return True
         return False
 
-def check_erp_in_bom(bom: list, all_name_check_result: dict) -> list:
+def check_erp_in_bom(bom: list, all_name_check_result: dict, extra_problem: str) -> tuple:
     for item in all_name_check_result.values():
-        for bom_item in bom:
-            if bom_item['itemNumber'] == item['item_no']:
-                bom_item['result'] = "pass" if status(bom_item['result']).__passable__ else bom_item['result']
-    return bom
+        if item['item_no'] != None:
+            item_used = False
+            for bom_item in bom:
+                if bom_item['itemNumber'] == item['item_no'] and not item_used:
+                    item_used = True
+                    bom_item['result'] = "pass" if status(bom_item['result']).__passable__ else bom_item['result']
+            if not item_used:
+                extra_problem += f'ERP名稱帶到的料號: {item["item_no"]}沒帶到\n'
+    return bom, extra_problem
 
-def check_must_have() -> list:
-    pass
+def check_must_have(cursor: Cursor, bom: list, factory: str, product_type: str, description: str, extra_problem: str) -> tuple:
+    cursor.execute(f"SELECT parts FROM must_have WHERE factory = '{factory}' AND type = '{product_type}' AND description = '{description}';")
+    for part in json.loads(cursor.fetchone()['parts']):
+        part_used = False
+        for bom_item in bom:
+            if bom_item['itemNumber'] == part and not part_used:
+                part_used = True
+                bom_item['result'] = "pass" if status(bom_item['result']).__passable__ else bom_item['result']
+        if not part_used:
+            extra_problem += f"必帶料: {part}沒帶到\n"
+    return bom, extra_problem
 
 def check_cable() -> list:
     pass

@@ -6,14 +6,16 @@ from connect import Cursor
 from bom_check.bom_check_comparison import *
 
 def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_name_check_result: dict, other_info: dict) -> dict:
+    # 用來記錄額外問題
+    extra_problm = ""
     is_MXM = other_info['is_MXM']
     description = other_info['description']
-    all_item_no = [item['itemNumber'] for item in bom]
+    # 增加result至BOM中
     bom = [{**item, "result":"uncheck"} for item in bom]
     # 檢查ERP name展示的料號是否出現在BOM裡
-    bom = check_erp_in_bom(bom, all_name_check_result)
+    bom, extra_problm = check_erp_in_bom(bom, all_name_check_result, extra_problm)
     # 檢查必帶料
-    bom = check_must_have(cursor, bom, factory, product_type, description)
+    bom, extra_problm = check_must_have(cursor, bom, factory, product_type, description, extra_problm)
     # 檢查cable
     check_cable()
     # MXM檢查油沒有帶軟排線
