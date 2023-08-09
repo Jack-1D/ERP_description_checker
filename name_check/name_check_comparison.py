@@ -2,10 +2,8 @@
 處理各料件名稱比較
 目的:為name_checker_API的子程式
 '''
-import mysql.connector
+from connect import Cursor
 import json
-from typing import NewType
-Cursor = NewType('Cursor',mysql.connector.cursor_cext.CMySQLCursor)
 
 def compare_motherboard(cursor: Cursor, factory: str, description: str, comparison_dict_list: list) -> dict:
     cursor.execute(f"SELECT * FROM description_to_motherboard WHERE factory = '{factory}' AND description = '{description}';")

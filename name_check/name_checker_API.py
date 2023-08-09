@@ -8,7 +8,7 @@ import re
 
 is_MXM = False
 
-def name_checker(cursor: Cursor, name: str, factory: str) -> dict:
+def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
     name = name.split('*ERP')
     name.pop(2)
     name.pop(0)
