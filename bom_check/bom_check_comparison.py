@@ -1,4 +1,5 @@
-'''
+'''用BOM的資料來檢查額外需要帶的料件
+
 目的:為bom_checker_API的子程式
 '''
 from connect import Cursor
@@ -107,9 +108,43 @@ def check_FPC(cursor: Cursor, bom: list, is_MXM: bool, description: str, extra_p
                 extra_problm += f"fpc: {fpc}沒帶到\n"
     return bom, extra_problm
 
-def check_bp_cooler() -> tuple[list, str]:
-    '''檢查背板散熱'''
-    pass
+def check_bp_cooler(cursor: Cursor, bom: list, extra_problm: str) -> tuple[list, str]:
+    '''檢查背板散熱
+    
+    背板背後的零件有幾個就需要幾個散熱
+    '''
+    backplane_item_no = ""
+    cooler = []
+    cursor.execute(f"SELECT * FROM backplane_cooler")
+    item_used = False
+    for item in cursor.fetchall():
+        if not item_used:
+            for bom_item in bom:
+                if bom_item['itemNumber'] == item['item_no']:
+                    item_used = True
+                    backplane_item_no = item['item_no']
+                    cooler = json.loads(item['parts'])
+                    break
+    # 若背板需附上cooler
+    if len(cooler) != 0:
+        cooler_used = False
+        for bom_item in bom:
+            if not cooler_used and bom_item['itemNumber'] == cooler[0]:
+                cooler_used = True
+                if not bom_status(bom_item).check_qty(int(cooler[1])):
+                    bom_item['result'] = "fail"
+                    extra_problem += f"料件: {cooler[0]}數量有錯\n"
+                else:
+                    bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+        # BOM裡若找不到必帶的cooler，回去找背板顯示錯誤
+        if not cooler_used:
+            item_used = False
+            for bom_item in bom:
+                if not item_used and bom_item['itemNumber'] == backplane_item_no:
+                    item_used = True
+                    bom_item['result'] = 'fail'
+                    extra_problm += f"背板cooler: {cooler[0]}沒帶到\n"
+    return bom, extra_problm
 
 def check_packing_box() -> tuple[list, str]:
     '''檢查packing_box'''
