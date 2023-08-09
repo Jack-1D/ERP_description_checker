@@ -1,5 +1,5 @@
-'''
-做BOM檢查
+'''做BOM檢查
+
 目的: 抓取網頁上BOM的資料來跑規則
 '''
 from connect import Cursor
@@ -17,7 +17,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查必帶料
     bom, extra_problm = check_must_have(cursor, bom, factory, product_type, description, extra_problm)
     # 檢查cable
-    check_cable()
+    bom, extra_problm = check_cable(cursor, bom, is_MXM, extra_problm)
     # MXM檢查油沒有帶軟排線
     check_FPC()
     # 檢查背板散熱
