@@ -19,7 +19,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查cable
     bom, extra_problm = check_cable(cursor, bom, is_MXM, extra_problm)
     # MXM檢查油沒有帶軟排線
-    check_FPC()
+    bom, extra_problm = check_FPC(cursor, bom, is_MXM, description, extra_problm)
     # 檢查背板散熱
     check_bp_cooler()
     # 檢查packing_box
