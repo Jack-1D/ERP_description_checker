@@ -124,7 +124,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
                                           == -1 else eval(device[0][device[0].find('('):device[0].find(')')+1])})
     
     # description的顯卡檢查，若有則接在最後面---------------------------------------------------------------
-    graphiccard_pattern = re.compile(r'(P|T|RTX)\d{4}$')
+    graphiccard_pattern = re.compile(r'(P|T|RTX)\d{4}')
     for device in check_devices:
         if graphiccard_pattern.search(device) != None:
             other_devices_to_dict.append({"device":"MXM"+graphiccard_pattern.search(device).group(),"number":1})
@@ -147,7 +147,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
                 part_name_end_pointer = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             memory_pattern = re.compile(r'M(\d+)T')
             if memory_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
-                memory_comparison_GB = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1000
+                memory_comparison_GB = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1024
                 part_name_end_pointer = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             # 檢查是第幾代的memory
             memory_series_pattern = re.compile(r'DDR(\d+) ')
@@ -169,7 +169,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
                 part_name_end_pointer = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             storage_pattern = re.compile(r'(\d+)T')
             if storage_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
-                storage_comparison_GB = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1000
+                storage_comparison_GB = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1024
                 part_name_end_pointer = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             storage_name_result = compare_storage(storage_description_GB, storage_comparison_GB)
             total_check_result["storage"] = storage_name_result

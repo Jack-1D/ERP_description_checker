@@ -11,7 +11,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     is_MXM = other_info['is_MXM']
     description = other_info['description']
     bp_token = other_info['bp_token']
-    graphiccard = all_name_check_result['graphiccard']['name'] if "graphiccard" in all_name_check_result else None
+    graphiccard = all_name_check_result['graphiccard']['name'] if "graphiccard" in all_name_check_result and all_name_check_result['graphiccard']['status'] else None
     # 增加result至BOM中
     bom = [{**item, "result":"uncheck"} for item in bom]
     # 檢查ERP name展示的料號是否出現在BOM裡
@@ -35,7 +35,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查memory
     bom, extra_problem = check_memory(cursor, bom, all_name_check_result, extra_problem)
     # 檢查storage
-    check_storage()
+    bom, extra_problem = check_storage(cursor, bom, all_name_check_result, extra_problem)
     # 檢查thermal_parts
     check_thermal_parts()
 

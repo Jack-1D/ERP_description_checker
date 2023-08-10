@@ -300,16 +300,54 @@ def check_memory(cursor: Cursor, bom: list, all_name_check_result: dict, extra_p
     elif memory_db_info == None and memory_description_info != None:
         memory_pass = False
         extra_problem += "ERP description有找到memory，但BOM或資料庫裡沒有找到memory\n"
-    if memory_pass:
+    if memory_pass and memory_db_info != None and memory_description_info != None:
         for bom_item in bom:
             if bom_item['itemNumber'] == memory_db_info['item_no']:
                 bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
                 break
     return bom, extra_problem
 
-def check_storage() -> tuple[list, str]:
-    '''檢查storage'''
-    pass
+def check_storage(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
+    '''檢查storage
+    
+    目前只先檢查storage的容量
+    '''
+    # ERP description的storage資訊
+    storage_description_info = all_name_check_result['storage'] if 'storage' in all_name_check_result else None
+    (storage_db_info, bom_storage_qty, storage_pass) = (None, 0, True)
+    cursor.execute("SELECT * FROM storage;")
+    for item in cursor.fetchall():
+        if storage_db_info != None:
+            break
+        for bom_item in bom:
+            if bom_item['itemNumber'] == item['item_no']:
+                storage_db_info = item
+                bom_storage_qty = bom_status(bom_item).get_qty()
+                break
+    # 若BOM和資料庫裡都有找到storage，且ERP description也有找到storage
+    if storage_db_info != None and storage_description_info != None:
+        if storage_db_info['capacity'] * bom_storage_qty != storage_description_info['capacity']:
+            storage_pass = False
+            bom_item['result'] = "fail"
+            extra_problem += "Storage容量description和BOM不同\n"
+    # 若BOM和資料庫裡都有找到storage，但ERP description沒有找到storage
+    elif storage_db_info != None and storage_description_info == None:
+        for bom_item in bom:
+            if bom_item['itemNumber'] == storage_db_info['item_no']:
+                storage_pass = False
+                bom_item['result'] = "fail"
+                break
+        extra_problem += "BOM和資料庫裡都有找到storage，但ERP description沒有找到storage\n"
+    # 若ERP description有找到storage，但BOM或資料庫裡沒有找到storage
+    elif storage_db_info == None and storage_description_info != None:
+        storage_pass = False
+        extra_problem += "ERP description有找到storage，但BOM或資料庫裡沒有找到storage\n"
+    if storage_pass and storage_db_info != None and storage_description_info != None:
+        for bom_item in bom:
+            if bom_item['itemNumber'] == storage_db_info['item_no']:
+                bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                break
+    return bom, extra_problem
 
 def check_thermal_parts() -> tuple[list, str]:
     '''檢查thermal_parts'''
