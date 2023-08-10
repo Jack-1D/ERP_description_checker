@@ -304,15 +304,14 @@ REPLACE INTO `must_have` (`factory`, `type`, `description`, `parts`) VALUES
 -- 傾印  資料表 std_rule.packing_box 結構
 CREATE TABLE IF NOT EXISTS `packing_box` (
   `item_no` varchar(20) NOT NULL,
-  `description` varchar(20) DEFAULT NULL
+  `description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`description`)),
+  PRIMARY KEY (`item_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- 正在傾印表格  std_rule.packing_box 的資料：~4 rows (近似值)
+-- 正在傾印表格  std_rule.packing_box 的資料：~2 rows (近似值)
 REPLACE INTO `packing_box` (`item_no`, `description`) VALUES
-	('58-10087-0000', '51'),
-	('58-10088-0000', '51MXM'),
-	('58-10088-0000', '61'),
-	('58-10088-0000', '61MXM');
+	('58-10087-0000', '["51"]'),
+	('58-10088-0000', '["61","51MXM","61MXM"]');
 
 -- 傾印  資料表 std_rule.storage 結構
 CREATE TABLE IF NOT EXISTS `storage` (

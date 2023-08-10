@@ -23,7 +23,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查背板散熱
     bom, extra_problm = check_bp_cooler(cursor, bom, extra_problm)
     # 檢查packing_box
-    check_packing_box()
+    bom, extra_problm = check_packing_box(cursor, bom, description, extra_problm)
     # 檢查機箱
     check_chassis()
     # 檢查assm_part
