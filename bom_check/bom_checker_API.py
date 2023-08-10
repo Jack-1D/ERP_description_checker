@@ -28,7 +28,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查機箱
     bom, extra_problm = check_chassis(cursor, bom, description, bp_token, extra_problm)
     # 檢查assm_part
-    bom, extra_problm = check_assm_part()
+    check_assm_part()
     # 檢查顯卡cooler
     check_graphiccard_cooler()
     # 檢查memory

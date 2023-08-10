@@ -97,13 +97,6 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
 
     total_check_result = {"motherboard":mb_name_result, "CPU":cpu_name_result, "backplane":bp_name_result}
 
-    # description的顯卡檢查
-    graphiccard_description = None
-    graphiccard_pattern = re.compile(r'(P|T|RTX)\d{4}$')
-    for device in check_devices:
-        if graphiccard_pattern.search(device) != None:
-            graphiccard_description = graphiccard_pattern.search(device).group
-
     # 其他零件檢查--------------------------------------------------------------------------------------
     other_devices = other_devices.split(",")
     other_devices = [device.strip(' ') for device in other_devices]
@@ -129,7 +122,13 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
             device = device.split("x")
             other_devices_to_dict.append({"device":device[1].upper().strip(' '), "number": int(device[0]) if device[0].find('+') \
                                           == -1 else eval(device[0][device[0].find('('):device[0].find(')')+1])})
-    print("sss",other_devices_to_dict)
+    
+    # description的顯卡檢查，若有則接在最後面---------------------------------------------------------------
+    graphiccard_pattern = re.compile(r'(P|T|RTX)\d{4}$')
+    for device in check_devices:
+        if graphiccard_pattern.search(device) != None:
+            other_devices_to_dict.append({"device":"MXM"+graphiccard_pattern.search(device).group(),"number":1})
+
     # 逐一找到斜線後方的關鍵字，因此part name必須照順序
     part_name_end_pointer = ERP_part_name.find('/')
     for device in other_devices_to_dict:
@@ -171,8 +170,9 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
                 part_name_end_pointer = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             storage_name_result = compare_storage(storage_description_GB, storage_comparison_GB)
             total_check_result["storage"] = storage_name_result
-        if is_MXM:
-            graphiccard_comparison = None
+        # 處理顯卡
+        if device['device'].find("MXM") != -1:
+            (graphiccard_description, graphiccard_comparison) = (device['device'][3:], None)
             if graphiccard_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
                 graphiccard_comparison = graphiccard_pattern.search(ERP_part_name[part_name_end_pointer:]).group()
                 part_name_end_pointer = int(graphiccard_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
