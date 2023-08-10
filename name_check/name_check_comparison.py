@@ -92,3 +92,12 @@ def compare_storage(description_GB: int, comparison_GB: int) -> dict:
     if description_GB != comparison_GB:
         return {"status":False, "error_msg":"Storage not match.", "item_no":None}
     return {"status":True, "error_msg":"", "item_no":None, "capacity":description_GB}
+
+def compare_graphiccard(description: str, comparison: str) -> dict:
+    if description == None:
+        return {"status":False, "error_msg":"Graphic card description error.", "item_no":None}
+    if comparison == None:
+        return {"status":False, "error_msg":"Graphic card name error.", "item_no":None}
+    if description != comparison:
+        return {"status":False, "error_msg":"Graphic card not match.", "item_no":None}
+    return {"status":True, "error_msg":"", "item_no":None, "name":description}

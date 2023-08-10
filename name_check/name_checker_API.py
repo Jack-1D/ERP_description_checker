@@ -2,7 +2,7 @@
 
 目的:主要處理字串後丟入comparison做比較
 '''
-from name_check.name_check_comparison import compare_motherboard, compare_CPU, compare_backplane, compare_memory, compare_storage
+from name_check.name_check_comparison import compare_motherboard, compare_CPU, compare_backplane, compare_memory, compare_storage, compare_graphiccard
 from connect import Cursor
 import re
 
@@ -97,6 +97,13 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
 
     total_check_result = {"motherboard":mb_name_result, "CPU":cpu_name_result, "backplane":bp_name_result}
 
+    # description的顯卡檢查
+    graphiccard_description = None
+    graphiccard_pattern = re.compile(r'(P|T|RTX)\d{4}$')
+    for device in check_devices:
+        if graphiccard_pattern.search(device) != None:
+            graphiccard_description = graphiccard_pattern.search(device).group
+
     # 其他零件檢查--------------------------------------------------------------------------------------
     other_devices = other_devices.split(",")
     other_devices = [device.strip(' ') for device in other_devices]
@@ -122,7 +129,8 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
             device = device.split("x")
             other_devices_to_dict.append({"device":device[1].upper().strip(' '), "number": int(device[0]) if device[0].find('+') \
                                           == -1 else eval(device[0][device[0].find('('):device[0].find(')')+1])})
-    
+    print("sss",other_devices_to_dict)
+    # 逐一找到斜線後方的關鍵字，因此part name必須照順序
     part_name_end_pointer = ERP_part_name.find('/')
     for device in other_devices_to_dict:
         # 處理memory
@@ -146,7 +154,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
             total_check_result["memory"] = memory_name_result
         # 處理storage
         if device['device'].find("SSD") != -1:
-            (storage_description_GB, storage_comparison_GB) = (0, 0)
+            (storage_description_GB, storage_comparison_GB) = (None, None)
             # description的memory大小
             storage_pattern = re.compile(r'(\d+)G')
             if storage_pattern.search(device['device']) != None: storage_description_GB = int(storage_pattern.search(device['device']).groups()[0]) * device['number']
@@ -163,5 +171,12 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
                 part_name_end_pointer = int(storage_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
             storage_name_result = compare_storage(storage_description_GB, storage_comparison_GB)
             total_check_result["storage"] = storage_name_result
+        if is_MXM:
+            graphiccard_comparison = None
+            if graphiccard_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
+                graphiccard_comparison = graphiccard_pattern.search(ERP_part_name[part_name_end_pointer:]).group()
+                part_name_end_pointer = int(graphiccard_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
+            graphiccard_name_result = compare_graphiccard(graphiccard_description, graphiccard_comparison)
+            total_check_result['graphiccard'] = graphiccard_name_result
 
     return total_check_result, {"is_MXM":is_MXM, "description":motherboard_description, "bp_token":bp_token}
