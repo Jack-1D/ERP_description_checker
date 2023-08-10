@@ -234,9 +234,27 @@ def check_assm_part(cursor: Cursor, bom: list, is_MXM: bool, graphiccard: str, d
         extra_problem += f"資料庫中找不到相對應的Assm part\n"
     return bom, extra_problem
 
-def check_graphiccard_cooler() -> tuple[list, str]:
-    '''檢查顯卡cooler'''
-    pass
+def check_graphiccard_cooler(cursor: Cursor, bom: list, is_MXM: bool, description: str, graphiccard: str, extra_problem:str) -> tuple[list, str]:
+    '''檢查顯卡cooler
+    
+    依據有無背板和帶的顯卡來判斷要帶哪些顯卡cooler
+    '''
+    if is_MXM:
+        cursor.execute(f"SELECT parts FROM graphiccard_cooler WHERE description = '{description}' AND graphiccard = '{graphiccard}';")
+        for item in json.loads(cursor.fetchone()['parts']):
+            cooler_used = False
+            for bom_item in bom:
+                if bom_item['itemNumber'] == item:
+                    cooler_used = True
+                    if not bom_status(bom_item).check_qty(1):
+                        bom_item['result'] = "fail"
+                        extra_problem += f"料件: {item}數量有錯\n"
+                    else:
+                        bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                    break
+            if not cooler_used:
+                extra_problem += f"Graphic card cooler: {item}沒帶到\n"
+    return bom, extra_problem
 
 def check_memory() -> tuple[list, str]:
     '''檢查memory'''
