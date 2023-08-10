@@ -24,13 +24,14 @@ def check_erp_in_bom(bom: list, all_name_check_result: dict, extra_problem: str)
         if item['item_no'] != None:
             item_used = False
             for bom_item in bom:
-                if not item_used and bom_item['itemNumber'] == item['item_no']:
+                if bom_item['itemNumber'] == item['item_no']:
                     item_used = True
                     if not bom_status(bom_item).check_qty(1):
                         bom_item['result'] = "fail"
                         extra_problem += f"料件: {item['item_no']}數量有錯\n"
                     else:
                         bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                    break
             if not item_used:
                 extra_problem += f"ERP名稱帶到的料號: {item['item_no']}沒帶到\n"
     return bom, extra_problem
@@ -44,13 +45,14 @@ def check_must_have(cursor: Cursor, bom: list, factory: str, product_type: str, 
     for part in json.loads(cursor.fetchone()['parts']):
         part_used = False
         for bom_item in bom:
-            if not part_used and bom_item['itemNumber'] == part[0]:
+            if bom_item['itemNumber'] == part[0]:
                 part_used = True
                 if not bom_status(bom_item).check_qty(int(part[1])):
                     bom_item['result'] = "fail"
                     extra_problem += f"料件: {part[0]}數量有錯\n"
                 else:
                     bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                break
         if not part_used:
             extra_problem += f"必帶料: {part[0]}沒帶到\n"
     return bom, extra_problem
@@ -66,24 +68,23 @@ def check_cable(cursor: Cursor, bom: list, is_MXM: bool, extra_problm: str) -> t
         for cable in cable_list:
             cable_used = False
             for bom_item in bom:
-                if not cable_used and bom_item['itemNumber'] == cable:
+                if bom_item['itemNumber'] == cable:
                     cable_used = True
                     if not bom_status(bom_item).check_qty(1):
                         bom_item['result'] = "fail"
                         extra_problem += f"料件: {cable}數量有錯\n"
                     else:
                         bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                    break
             if not cable_used:
                 extra_problm += f"Cable: {cable}沒帶到\n"
     else:
         for cable in cable_list:
-            cable_used = False
             for bom_item in bom:
-                if not cable_used and bom_item['itemNumber'] == cable:
-                    cable_used = True
+                if bom_item['itemNumber'] == cable:
                     bom_item['result'] = "fail"
-            if cable_used:
-                extra_problm += f"Cable: {cable}多帶了\n"
+                    extra_problm += f"Cable: {cable}多帶了\n"
+                    break
     return bom, extra_problm
 
 def check_FPC(cursor: Cursor, bom: list, is_MXM: bool, description: str, extra_problm: str) -> tuple[list, str]:
@@ -97,13 +98,14 @@ def check_FPC(cursor: Cursor, bom: list, is_MXM: bool, description: str, extra_p
         for fpc in fpc_list:
             fpc_used = False
             for bom_item in bom:
-                if not fpc_used and bom_item['itemNumber'] == fpc:
+                if bom_item['itemNumber'] == fpc:
                     fpc_used = True
                     if not bom_status(bom_item).check_qty(1):
                         bom_item['result'] = "fail"
                         extra_problem += f"料件: {fpc}數量有錯\n"
                     else:
                         bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                    break
             if not fpc_used:
                 extra_problm += f"FPC: {fpc}沒帶到\n"
     return bom, extra_problm
@@ -118,32 +120,33 @@ def check_bp_cooler(cursor: Cursor, bom: list, extra_problm: str) -> tuple[list,
     cursor.execute(f"SELECT * FROM backplane_cooler")
     item_used = False
     for item in cursor.fetchall():
-        if not item_used:
-            for bom_item in bom:
-                if bom_item['itemNumber'] == item['item_no']:
-                    item_used = True
-                    backplane_item_no = item['item_no']
-                    cooler = json.loads(item['parts'])
-                    break
+        if item_used:
+            break
+        for bom_item in bom:
+            if bom_item['itemNumber'] == item['item_no']:
+                item_used = True
+                backplane_item_no = item['item_no']
+                cooler = json.loads(item['parts'])
+                break
     # 若背板需附上cooler
     if len(cooler) != 0:
         cooler_used = False
         for bom_item in bom:
-            if not cooler_used and bom_item['itemNumber'] == cooler[0]:
+            if bom_item['itemNumber'] == cooler[0]:
                 cooler_used = True
                 if not bom_status(bom_item).check_qty(int(cooler[1])):
                     bom_item['result'] = "fail"
                     extra_problem += f"料件: {cooler[0]}數量有錯\n"
                 else:
                     bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                break
         # BOM裡若找不到必帶的cooler，回去找背板顯示錯誤
         if not cooler_used:
-            item_used = False
             for bom_item in bom:
-                if not item_used and bom_item['itemNumber'] == backplane_item_no:
-                    item_used = True
+                if bom_item['itemNumber'] == backplane_item_no:
                     bom_item['result'] = 'fail'
                     extra_problm += f"背板cooler: {cooler[0]}沒帶到\n"
+                    break
     return bom, extra_problm
 
 def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problm: str) -> tuple[list, str]:
@@ -159,21 +162,43 @@ def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problm:
             break
     packing_box_used = False
     for bom_item in bom:
-        if not packing_box_used and bom_item['itemNumber'] == packing_box_item_no:
+        if bom_item['itemNumber'] == packing_box_item_no:
             packing_box_used = True
             if not bom_status(bom_item).check_qty(1):
                 bom_item['result'] = "fail"
                 extra_problem += f"料件: {packing_box_item_no}數量有錯\n"
             else:
                 bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+            break
     if not packing_box_used:
         extra_problm += f'Packing box: {packing_box_item_no}沒帶到\n'
     return bom, extra_problm
 
 
-def check_chassis() -> tuple[list, str]:
-    '''檢查機箱'''
-    pass
+def check_chassis(cursor: Cursor, bom: list, description: str, bp_token: str, extra_problm: str) -> tuple[list, str]:
+    '''檢查機箱
+    
+    依據槽數和系列共有4種機箱
+    '''
+    chassis_item_no = ""
+    cursor.execute(f"SELECT * FROM chassis;")
+    for item in cursor.fetchall():
+        if description in json.loads(item['description']) and int(bp_token) == item['slots']:
+            chassis_item_no = item['item_no']
+            break
+    chassis_used = False
+    for bom_item in bom:
+        if bom_item['itemNumber'] == chassis_item_no:
+            chassis_used = True
+            if not bom_status(bom_item).check_qty(1):
+                bom_item['result'] = "fail"
+                extra_problem += f"料件: {chassis_item_no}數量有錯\n"
+            else:
+                bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+            break
+    if not chassis_used:
+        extra_problm += f"Chassis: {chassis_item_no}沒帶到\n"
+    return bom, extra_problm
 
 def check_assm_part() -> tuple[list, str]:
     '''檢查assm_part'''

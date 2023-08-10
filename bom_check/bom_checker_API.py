@@ -10,6 +10,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     extra_problm = ""
     is_MXM = other_info['is_MXM']
     description = other_info['description']
+    bp_token = other_info['bp_token']
     # 增加result至BOM中
     bom = [{**item, "result":"uncheck"} for item in bom]
     # 檢查ERP name展示的料號是否出現在BOM裡
@@ -25,7 +26,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查packing_box
     bom, extra_problm = check_packing_box(cursor, bom, description, extra_problm)
     # 檢查機箱
-    check_chassis()
+    bom, extra_problm = check_chassis(cursor, bom, description, bp_token, extra_problm)
     # 檢查assm_part
     check_assm_part()
     # 檢查顯卡cooler
