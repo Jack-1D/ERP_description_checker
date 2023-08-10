@@ -258,7 +258,7 @@ def check_graphiccard_cooler(cursor: Cursor, bom: list, is_MXM: bool, descriptio
                 extra_problem += f"Graphic card cooler: {item}沒帶到\n"
     return bom, extra_problem
 
-def check_memory(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
+def check_memory(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str, int]:
     '''檢查memory
     
     目前只先檢查帶到的memory世代和總容量
@@ -305,7 +305,7 @@ def check_memory(cursor: Cursor, bom: list, all_name_check_result: dict, extra_p
             if bom_item['itemNumber'] == memory_db_info['item_no']:
                 bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
                 break
-    return bom, extra_problem
+    return bom, extra_problem, bom_memory_qty
 
 def check_storage(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
     '''檢查storage
@@ -349,6 +349,24 @@ def check_storage(cursor: Cursor, bom: list, all_name_check_result: dict, extra_
                 break
     return bom, extra_problem
 
-def check_thermal_parts() -> tuple[list, str]:
-    '''檢查thermal_parts'''
-    pass
+def check_thermal_parts(cursor: Cursor, bom: list, bom_memory_qty: int, extra_problem: str) -> tuple[list, str]:
+    '''檢查thermal_parts
+    
+    Thermal parts的選用取決於Memory帶幾片
+    '''
+    if bom_memory_qty != 0:
+        cursor.execute(f"SELECT item_no FROM thermal_parts WHERE memory_pcs = {bom_memory_qty};")
+        thermal_parts_item_no = cursor.fetchone()['item_no']
+        thermal_parts_used = False
+        for bom_item in bom:
+            if bom_item['itemNumber'] == thermal_parts_item_no:
+                thermal_parts_used = True
+                if not bom_status(bom_item).check_qty(1):
+                    bom_item['result'] = "fail"
+                    extra_problem += f"料件: {thermal_parts_item_no}數量有錯\n"
+                else:
+                    bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                break
+        if not thermal_parts_used:
+            extra_problem += f"Thermal parts: {thermal_parts_item_no}沒帶到\n"
+    return bom, extra_problem

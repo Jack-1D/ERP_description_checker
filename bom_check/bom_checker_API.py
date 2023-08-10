@@ -33,10 +33,9 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查顯卡cooler
     bom, extra_problem = check_graphiccard_cooler(cursor, bom, is_MXM, description, graphiccard, extra_problem)
     # 檢查memory
-    bom, extra_problem = check_memory(cursor, bom, all_name_check_result, extra_problem)
+    bom, extra_problem, bom_memory_qty = check_memory(cursor, bom, all_name_check_result, extra_problem)
     # 檢查storage
     bom, extra_problem = check_storage(cursor, bom, all_name_check_result, extra_problem)
     # 檢查thermal_parts
-    check_thermal_parts()
-
-    return {}
+    bom, extra_problem = check_thermal_parts(cursor, bom, bom_memory_qty, extra_problem)
+    return {"BOM":bom, "extra_problem":extra_problem}
