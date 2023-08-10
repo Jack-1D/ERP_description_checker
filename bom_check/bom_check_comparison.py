@@ -57,7 +57,7 @@ def check_must_have(cursor: Cursor, bom: list, factory: str, product_type: str, 
             extra_problem += f"必帶料: {part[0]}沒帶到\n"
     return bom, extra_problem
 
-def check_cable(cursor: Cursor, bom: list, is_MXM: bool, extra_problm: str) -> tuple[list, str]:
+def check_cable(cursor: Cursor, bom: list, is_MXM: bool, extra_problem: str) -> tuple[list, str]:
     '''檢查cable
 
     若不是MXM系列要多帶兩條cable，否則就是多帶
@@ -77,17 +77,17 @@ def check_cable(cursor: Cursor, bom: list, is_MXM: bool, extra_problm: str) -> t
                         bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
                     break
             if not cable_used:
-                extra_problm += f"Cable: {cable}沒帶到\n"
+                extra_problem += f"Cable: {cable}沒帶到\n"
     else:
         for cable in cable_list:
             for bom_item in bom:
                 if bom_item['itemNumber'] == cable:
                     bom_item['result'] = "fail"
-                    extra_problm += f"Cable: {cable}多帶了\n"
+                    extra_problem += f"Cable: {cable}多帶了\n"
                     break
-    return bom, extra_problm
+    return bom, extra_problem
 
-def check_FPC(cursor: Cursor, bom: list, is_MXM: bool, description: str, extra_problm: str) -> tuple[list, str]:
+def check_FPC(cursor: Cursor, bom: list, is_MXM: bool, description: str, extra_problem: str) -> tuple[list, str]:
     '''MXM檢查有沒有帶軟排線
     
     MXM系列須帶多帶一條軟排線
@@ -107,10 +107,10 @@ def check_FPC(cursor: Cursor, bom: list, is_MXM: bool, description: str, extra_p
                         bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
                     break
             if not fpc_used:
-                extra_problm += f"FPC: {fpc}沒帶到\n"
-    return bom, extra_problm
+                extra_problem += f"FPC: {fpc}沒帶到\n"
+    return bom, extra_problem
 
-def check_bp_cooler(cursor: Cursor, bom: list, extra_problm: str) -> tuple[list, str]:
+def check_bp_cooler(cursor: Cursor, bom: list, extra_problem: str) -> tuple[list, str]:
     '''檢查背板散熱
     
     背板背後的零件有幾個就需要幾個散熱
@@ -145,11 +145,11 @@ def check_bp_cooler(cursor: Cursor, bom: list, extra_problm: str) -> tuple[list,
             for bom_item in bom:
                 if bom_item['itemNumber'] == backplane_item_no:
                     bom_item['result'] = 'fail'
-                    extra_problm += f"背板cooler: {cooler[0]}沒帶到\n"
+                    extra_problem += f"背板cooler: {cooler[0]}沒帶到\n"
                     break
-    return bom, extra_problm
+    return bom, extra_problem
 
-def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problm: str) -> tuple[list, str]:
+def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problem: str) -> tuple[list, str]:
     '''檢查packing_box
     
     共2種packing_box
@@ -171,11 +171,11 @@ def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problm:
                 bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
             break
     if not packing_box_used:
-        extra_problm += f'Packing box: {packing_box_item_no}沒帶到\n'
-    return bom, extra_problm
+        extra_problem += f'Packing box: {packing_box_item_no}沒帶到\n'
+    return bom, extra_problem
 
 
-def check_chassis(cursor: Cursor, bom: list, description: str, bp_token: str, extra_problm: str) -> tuple[list, str]:
+def check_chassis(cursor: Cursor, bom: list, description: str, bp_token: str, extra_problem: str) -> tuple[list, str]:
     '''檢查機箱
     
     依據槽數和系列共有4種機箱
@@ -197,12 +197,42 @@ def check_chassis(cursor: Cursor, bom: list, description: str, bp_token: str, ex
                 bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
             break
     if not chassis_used:
-        extra_problm += f"Chassis: {chassis_item_no}沒帶到\n"
-    return bom, extra_problm
+        extra_problem += f"Chassis: {chassis_item_no}沒帶到\n"
+    return bom, extra_problem
 
-def check_assm_part() -> tuple[list, str]:
-    '''檢查assm_part'''
-    pass
+def check_assm_part(cursor: Cursor, bom: list, is_MXM: bool, graphiccard: str, description: str, bp_token: str, extra_problem: str) -> tuple[list, str]:
+    '''檢查assm_part
+    
+    依據使用的顯卡種類、有無背板、槽數，共8種
+    '''
+    assm_part_item_no = ""
+    cursor.execute(f"SELECT * FROM assm_part;")
+    for item in cursor.fetchall():
+        if not is_MXM:
+            if description == item['description'] and int(bp_token) == item['slots']:
+                assm_part_item_no = item['item_no']
+                break
+        else:
+            if graphiccard in json.loads(item['graphiccard']) and description == item['description'] and int(bp_token) == item['slots']:
+                assm_part_item_no = item['item_no']
+                break
+    # 若有找到相應的assm part
+    if assm_part_item_no != "":
+        assm_part_used = False
+        for bom_item in bom:
+            if bom_item['itemNumber'] == assm_part_item_no:
+                assm_part_used = True
+                if not bom_status(bom_item).check_qty(1):
+                    bom_item['result'] = "fail"
+                    extra_problem += f"料件: {assm_part_item_no}數量有錯\n"
+                else:
+                    bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                break
+        if not assm_part_used:
+            extra_problem += f"Assm part: {assm_part_item_no}沒帶到\n"
+    else:
+        extra_problem += f"資料庫中找不到相對應的Assm part\n"
+    return bom, extra_problem
 
 def check_graphiccard_cooler() -> tuple[list, str]:
     '''檢查顯卡cooler'''
