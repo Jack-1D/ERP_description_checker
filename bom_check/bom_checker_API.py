@@ -33,7 +33,7 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     # 檢查顯卡cooler
     bom, extra_problem = check_graphiccard_cooler(cursor, bom, is_MXM, description, graphiccard, extra_problem)
     # 檢查memory
-    check_memory()
+    bom, extra_problem = check_memory(cursor, bom, all_name_check_result, extra_problem)
     # 檢查storage
     check_storage()
     # 檢查thermal_parts

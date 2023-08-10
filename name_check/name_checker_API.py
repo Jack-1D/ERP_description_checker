@@ -149,7 +149,10 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
             if memory_pattern.search(ERP_part_name[part_name_end_pointer:]) != None:
                 memory_comparison_GB = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).groups()[0]) * 1000
                 part_name_end_pointer = int(memory_pattern.search(ERP_part_name[part_name_end_pointer:]).span()[1])
-            memory_name_result = compare_memory(memory_description_GB, memory_comparison_GB)
+            # 檢查是第幾代的memory
+            memory_series_pattern = re.compile(r'DDR(\d+) ')
+            memory_series = memory_series_pattern.search(device['device']).groups()[0]
+            memory_name_result = compare_memory(memory_description_GB, memory_comparison_GB, memory_series)
             total_check_result["memory"] = memory_name_result
         # 處理storage
         if device['device'].find("SSD") != -1:

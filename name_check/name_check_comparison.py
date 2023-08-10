@@ -75,14 +75,14 @@ def compare_backplane(cursor: Cursor, bp_token: int, e_token: int, comparison_di
         return {"status":False, "error_msg":"e槽數錯誤", "item_no":item_no}
     return {"status":True, "error_msg":"", "item_no":item_no}
 
-def compare_memory(description_GB: int, comparison_GB: int) -> dict:
+def compare_memory(description_GB: int, comparison_GB: int, memory_series: str) -> dict:
     if description_GB == None:
         return {"status":False, "error_msg":"Memory description error.", "item_no":None}
     if comparison_GB == None:
         return {"status":False, "error_msg":"Memory part name error.", "item_no":None}
     if description_GB != comparison_GB:
         return {"status":False, "error_msg":"Memory not match.", "item_no":None}
-    return {"status":True, "error_msg":"", "item_no":None, "capacity":description_GB}
+    return {"status":True, "error_msg":"", "item_no":None, "capacity":description_GB, "series":"DDR"+memory_series}
 
 def compare_storage(description_GB: int, comparison_GB: int) -> dict:
     if description_GB == None:

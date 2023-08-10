@@ -17,6 +17,8 @@ class bom_status:
         if int(self.state['Qty']) == qty:
             return True
         return False
+    def get_qty(self) -> int:
+        return int(self.state['Qty'])
 
 def check_erp_in_bom(bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
     '''檢查ERP name展示的料號是否出現在BOM裡'''
@@ -117,7 +119,7 @@ def check_bp_cooler(cursor: Cursor, bom: list, extra_problem: str) -> tuple[list
     '''
     backplane_item_no = ""
     cooler = []
-    cursor.execute(f"SELECT * FROM backplane_cooler")
+    cursor.execute("SELECT * FROM backplane_cooler")
     item_used = False
     for item in cursor.fetchall():
         if item_used:
@@ -155,7 +157,7 @@ def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problem
     共2種packing_box
     '''
     packing_box_item_no = ""
-    cursor.execute(f"SELECT * FROM packing_box")
+    cursor.execute("SELECT * FROM packing_box")
     for item in cursor.fetchall():
         if description in json.loads(item['description']):
             packing_box_item_no = item['item_no']
@@ -181,7 +183,7 @@ def check_chassis(cursor: Cursor, bom: list, description: str, bp_token: str, ex
     依據槽數和系列共有4種機箱
     '''
     chassis_item_no = ""
-    cursor.execute(f"SELECT * FROM chassis;")
+    cursor.execute("SELECT * FROM chassis;")
     for item in cursor.fetchall():
         if description in json.loads(item['description']) and int(bp_token) == item['slots']:
             chassis_item_no = item['item_no']
@@ -206,7 +208,7 @@ def check_assm_part(cursor: Cursor, bom: list, is_MXM: bool, graphiccard: str, d
     依據使用的顯卡種類、有無背板、槽數，共8種
     '''
     assm_part_item_no = ""
-    cursor.execute(f"SELECT * FROM assm_part;")
+    cursor.execute("SELECT * FROM assm_part;")
     for item in cursor.fetchall():
         if not is_MXM:
             if description == item['description'] and int(bp_token) == item['slots']:
@@ -256,9 +258,54 @@ def check_graphiccard_cooler(cursor: Cursor, bom: list, is_MXM: bool, descriptio
                 extra_problem += f"Graphic card cooler: {item}沒帶到\n"
     return bom, extra_problem
 
-def check_memory() -> tuple[list, str]:
-    '''檢查memory'''
-    pass
+def check_memory(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
+    '''檢查memory
+    
+    目前只先檢查帶到的memory世代和總容量
+    '''
+    # ERP description的memory資訊
+    memory_description_info = all_name_check_result['memory'] if 'memory' in all_name_check_result else None
+    # memory_db_info:紀錄BOM裡帶到的memory料號資訊
+    # bom_memory_qty:紀錄BOM裡memory帶幾片
+    # memory_pass:紀錄本函式的檢查是否通過
+    (memory_db_info, bom_memory_qty, memory_pass) = (None, 0, True)
+    cursor.execute("SELECT * FROM memory;")
+    for item in cursor.fetchall():
+        if memory_db_info != None:
+            break
+        for bom_item in bom:
+            if bom_item['itemNumber'] == item['item_no']:
+                memory_db_info = item
+                bom_memory_qty = bom_status(bom_item).get_qty()
+                break
+    # 若BOM和資料庫裡都有找到memory，且ERP description也有找到memory
+    if memory_db_info != None and memory_description_info != None:
+        if memory_db_info['series'] != memory_description_info['series']:
+            memory_pass = False
+            bom_item['result'] = "fail"
+            extra_problem += "Memory世代description和BOM不同\n"
+        if memory_db_info['capacity'] * bom_memory_qty != memory_description_info['capacity']:
+            memory_pass = False
+            bom_item['result'] = "fail"
+            extra_problem += "Memory容量description和BOM不同\n"
+    # 若BOM和資料庫裡都有找到memory，但ERP description沒有找到memory
+    elif memory_db_info != None and memory_description_info == None:
+        for bom_item in bom:
+            if bom_item['itemNumber'] == memory_db_info['item_no']:
+                memory_pass = False
+                bom_item['result'] = "fail"
+                break
+        extra_problem += "BOM和資料庫裡都有找到memory，但ERP description沒有找到memory\n"
+    # 若ERP description有找到memory，但BOM或資料庫裡沒有找到memory
+    elif memory_db_info == None and memory_description_info != None:
+        memory_pass = False
+        extra_problem += "ERP description有找到memory，但BOM或資料庫裡沒有找到memory\n"
+    if memory_pass:
+        for bom_item in bom:
+            if bom_item['itemNumber'] == memory_db_info['item_no']:
+                bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                break
+    return bom, extra_problem
 
 def check_storage() -> tuple[list, str]:
     '''檢查storage'''
