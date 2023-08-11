@@ -51,16 +51,19 @@ submit_button.addEventListener("click", (e) => {
     saveERP(e);
 });
 function saveERP(e) {
-    let erp = erp_input.value;
-    let factory = factory_input.checked;
-    let product_type = product_type_input.checked;
-    localStorage.setItem('erp', erp);
-    localStorage.setItem('factory', factory.toString());
-    localStorage.setItem('product_type', product_type.toString());
+    localStorage.setItem('erp', erp_input.value);
+    localStorage.setItem('factory', factory_input.checked.toString());
+    localStorage.setItem('product_type', product_type_input.checked.toString());
 }
 erp_input.value = localStorage.getItem('erp');
 factory_input.checked = localStorage.getItem('factory') == 'true' ? true : false;
 product_type_input.checked = localStorage.getItem('product_type') == 'true' ? true : false;
+name_result_color.style.backgroundColor = localStorage.getItem('name_result_color');
+name_result_text.innerText = localStorage.getItem('name_result_text');
+name_check_output_box.innerText = localStorage.getItem('name_check_output');
+bom_result_color.style.backgroundColor = localStorage.getItem('bom_result_color');
+bom_result_text.innerText = localStorage.getItem('bom_result_text');
+bom_check_output_box.innerText = localStorage.getItem('bom_check_output');
 
 // 主要程式
 submit_button.addEventListener("click", async (e) => {
@@ -82,13 +85,19 @@ submit_button.addEventListener("click", async (e) => {
                     name_check_result_error_msg += value["error_msg"] + '\n';
                 }
             }
-            name_result_color.style.backgroundColor = name_check_result ? '#53FF53' : '#FF2D2D';
-            name_result_text.innerText = name_check_result ? 'PASS' : 'FAIL';
-            name_check_output_box.innerText = name_check_result_error_msg;
+            localStorage.setItem('name_result_color', name_check_result ? '#53FF53' : '#FF2D2D');
+            name_result_color.style.backgroundColor = localStorage.getItem('name_result_color');
+            localStorage.setItem('name_result_text', name_check_result ? 'PASS' : 'FAIL');
+            name_result_text.innerText = localStorage.getItem('name_result_text');
+            localStorage.setItem('name_check_output', name_check_result_error_msg);
+            name_check_output_box.innerText = localStorage.getItem('name_check_output');
 
-            bom_result_color.style.backgroundColor = analyze_result[0].result.BOM_check_result.extra_problem.length == 0 ? '#53FF53' : '#FF2D2D';
-            bom_result_text.innerText = analyze_result[0].result.BOM_check_result.extra_problem.length == 0 ? 'PASS' : 'FAIL';
-            bom_check_output_box.innerText = analyze_result[0].result.BOM_check_result.extra_problem;
+            localStorage.setItem('bom_result_color', analyze_result[0].result.BOM_check_result.extra_problem.length == 0 ? '#53FF53' : '#FF2D2D');
+            bom_result_color.style.backgroundColor = localStorage.getItem('bom_result_color');
+            localStorage.setItem('bom_result_text', analyze_result[0].result.BOM_check_result.extra_problem.length == 0 ? 'PASS' : 'FAIL');
+            bom_result_text.innerText = localStorage.getItem('bom_result_text');
+            localStorage.setItem('bom_check_output', analyze_result[0].result.BOM_check_result.extra_problem);
+            bom_check_output_box.innerText = localStorage.getItem('bom_check_output');
         });
 
 });
