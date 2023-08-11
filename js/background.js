@@ -1,21 +1,18 @@
-chrome.action.onClicked.addListener((tab) => {
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: test
-    });
-});
-chrome.runtime.onInstalled.addListener(() => {
-    console.log('onInstalled...');
-});
-chrome.runtime.onClicked.addListener(() => {
-    console.log('hhh');
-})
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.type == "click_event") {
-        console.log("click event captured in current webpage");
-        // Call the callback passed to chrome.action.onClicked
+chrome.runtime.onConnect.addListener(function(port) {
+    if (port.name === "popup") {
+        console.log("popopopopopopo");
+        chrome.storage.local.set({"connect":"true"},function() {
+            console.log("set");
+        });
+        // console.log(chrome.storage.local.get());
+        // localStorage.setItem("connect", 'true');
+        port.onDisconnect.addListener(function() {
+            console.log("popup has been closed");
+            chrome.storage.local.get("connect",function(items) {
+                console.log("get");
+                console.log(items);
+            });
+            // localStorage.removeItem("connect");
+        });
     }
 });
-function func() {
-    console.log("test");
-}
