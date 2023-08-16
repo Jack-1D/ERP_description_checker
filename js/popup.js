@@ -12,7 +12,7 @@ const bom_result_color = document.getElementById("bom_result");
 const bom_result_text = document.getElementById("bom_result_text");
 const bom_check_output_box = document.getElementById("bom_check_error");
 
-
+// 自動抓取網頁上的ERP description、factory、type
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.scripting.executeScript({
         target: { tabId: tabs[0].id },
@@ -45,17 +45,8 @@ function getElement() {
     }
 }
 
-
-
 // 連結background.js
-// const port = chrome.runtime.connect({ name: "popup" });
-// chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-//     console.log(message);
-//     sendResponse({
-//         data: "I am fine, thank you. How is life in the background?"
-//     });
-// });
-
+const port = chrome.runtime.connect({ name: "popup" });
 
 // 建立安全連線後，連線按鈕消失
 var connected = fetch("https://172.30.202.88:5000/", {
@@ -172,7 +163,7 @@ function analyze(erp, factory, product_type) {
         headers: { "Content-type": "application/x-www-form-urlencoded; charset=UTF-8" },
         body: JSON.stringify({
             'BOM': BOM,
-            "erp": erp.replace(/[+]/g, "plus"),
+            "erp": erp.replace(/[+]/g, "plus"),     // + 號傳輸後會不見
             "factory": factory,
             "product_type": product_type
         })

@@ -176,7 +176,6 @@ def check_packing_box(cursor: Cursor, bom: list, description: str, extra_problem
         extra_problem += f'Packing box: {packing_box_item_no}沒帶到\n'
     return bom, extra_problem
 
-
 def check_chassis(cursor: Cursor, bom: list, description: str, bp_token: str, extra_problem: str) -> tuple[list, str]:
     '''檢查機箱
     
@@ -261,50 +260,72 @@ def check_graphiccard_cooler(cursor: Cursor, bom: list, is_MXM: bool, descriptio
 def check_memory(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str, int]:
     '''檢查memory
     
-    目前只先檢查帶到的memory世代和總容量
+    目前只先檢查帶到的memory世代、總容量、頻率大的當主料
     '''
     # ERP description的memory資訊
     memory_description_info = all_name_check_result['memory'] if 'memory' in all_name_check_result else None
     # memory_db_info:紀錄BOM裡帶到的memory料號資訊
     # bom_memory_qty:紀錄BOM裡memory帶幾片
     # memory_pass:紀錄本函式的檢查是否通過
-    (memory_db_info, bom_memory_qty, memory_pass) = (None, 0, True)
+    # primary_freq, substitute_freq: 記錄主料和替代料記憶體大小
+    (memory_db_info, bom_memory_qty, memory_pass, primary_freq, substitute_freq) = ([None], 0, True, 0, 0)
     cursor.execute("SELECT * FROM memory;")
     for item in cursor.fetchall():
-        if memory_db_info != None:
-            break
         for bom_item in bom:
             if bom_item['itemNumber'] == item['item_no']:
-                memory_db_info = item
                 bom_memory_qty = bom_status(bom_item).get_qty()
+                # 1為主料 3為替代料
+                if bom_item['Substitute'][0] == '1':
+                    primary_freq = item['frequency']
+                    memory_db_info[0] = item
+                elif bom_item['Substitute'][0] == '3':
+                    substitute_freq = item['frequency'] if item['frequency'] > substitute_freq else substitute_freq
+                    memory_db_info.append(item)
                 break
-    # 若BOM和資料庫裡都有找到memory，且ERP description也有找到memory
-    if memory_db_info != None and memory_description_info != None:
-        if memory_db_info['series'] != memory_description_info['series']:
-            memory_pass = False
-            bom_item['result'] = "fail"
-            extra_problem += "Memory世代description和BOM不同\n"
-        if memory_db_info['capacity'] * bom_memory_qty != memory_description_info['capacity']:
-            memory_pass = False
-            bom_item['result'] = "fail"
-            extra_problem += "Memory容量description和BOM不同\n"
-    # 若BOM和資料庫裡都有找到memory，但ERP description沒有找到memory
-    elif memory_db_info != None and memory_description_info == None:
-        for bom_item in bom:
-            if bom_item['itemNumber'] == memory_db_info['item_no']:
+    # 防報錯，有找到主料才做事
+    if memory_db_info[0] != None:
+        # 若BOM和資料庫裡都有找到memory，且ERP description也有找到memory
+        if memory_db_info != [] and memory_description_info != None:
+            if memory_db_info[0]['series'] != memory_description_info['series']:
                 memory_pass = False
                 bom_item['result'] = "fail"
-                break
-        extra_problem += "BOM和資料庫裡都有找到memory，但ERP description沒有找到memory\n"
-    # 若ERP description有找到memory，但BOM或資料庫裡沒有找到memory
-    elif memory_db_info == None and memory_description_info != None:
-        memory_pass = False
-        extra_problem += "ERP description有找到memory，但BOM或資料庫裡沒有找到memory\n"
-    if memory_pass and memory_db_info != None and memory_description_info != None:
-        for bom_item in bom:
-            if bom_item['itemNumber'] == memory_db_info['item_no']:
-                bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
-                break
+                extra_problem += "Memory世代description和BOM不同\n"
+            if memory_db_info[0]['capacity'] * bom_memory_qty != memory_description_info['capacity']:
+                memory_pass = False
+                bom_item['result'] = "fail"
+                extra_problem += "Memory容量description和BOM不同\n"
+        # 若BOM和資料庫裡都有找到memory，但ERP description沒有找到memory
+        elif memory_db_info != [] and memory_description_info == None:
+            for bom_item in bom:
+                if bom_item['itemNumber'] == memory_db_info[0]['item_no']:
+                    memory_pass = False
+                    bom_item['result'] = "fail"
+                    break
+            extra_problem += "BOM和資料庫裡都有找到memory，但ERP description沒有找到memory\n"
+        # 若ERP description有找到memory，但BOM或資料庫裡沒有找到memory
+        elif memory_db_info == [] and memory_description_info != None:
+            memory_pass = False
+            extra_problem += "ERP description有找到memory，但BOM或資料庫裡沒有找到memory\n"
+        # 若有替代料，則頻率高的當主料
+        if primary_freq < substitute_freq:
+            memory_pass = False
+            extra_problem += "Memory頻率高的當主料\n"
+        # 若通過檢查，且有這個memory，則讓memory及他的替代料pass
+        if memory_pass and memory_db_info != [] and memory_description_info != None:
+            for bom_item in bom:
+                for index in range(len(memory_db_info)):
+                    if bom_item['itemNumber'] == memory_db_info[index]['item_no']:
+                        bom_item['result'] = "pass" if bom_status(bom_item).__passable__ else bom_item['result']
+                        break
+        # 否則若有這個memory卻沒過，則讓這個memory及他的替代料fail
+        elif not memory_pass and memory_db_info != []:
+            for bom_item in bom:
+                for index in range(len(memory_db_info)):
+                    if bom_item['itemNumber'] == memory_db_info[index]['item_no']:
+                        bom_item['result'] = "fail"
+                        break
+    else:
+        extra_problem += "Memory主料不在資料庫裡\n"
     return bom, extra_problem, bom_memory_qty
 
 def check_storage(cursor: Cursor, bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
