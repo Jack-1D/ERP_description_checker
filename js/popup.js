@@ -12,8 +12,50 @@ const bom_result_color = document.getElementById("bom_result");
 const bom_result_text = document.getElementById("bom_result_text");
 const bom_check_output_box = document.getElementById("bom_check_error");
 
+
+chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        func: getElement,
+    },
+        (element) => {
+            let result = element[0].result;
+            if (JSON.stringify(result) != '{}') {
+                localStorage.setItem('erp', result.name);
+                localStorage.setItem('factory', result.factory == "TPMC" ? 'true' : 'false');
+                localStorage.setItem('product_type', result.type[0] == "1" ? 'true' : 'false');
+            }
+            getLocalStorage();
+        })
+});
+
+function getElement() {
+    try {
+        let name = "";
+        let pre_text = document.getElementsByClassName("container thumb")[0].getElementsByTagName('fieldset')[1].getElementsByClassName('side_by_side_text')[2];
+        for (let i = 0; i < 3; i++) {
+            name += pre_text.getElementsByTagName('dt')[i].innerText;
+            name += pre_text.getElementsByTagName('dd')[i].innerText;
+        }
+        let factory = pre_text.getElementsByTagName('dd')[5].innerText;
+        let type = pre_text.getElementsByTagName('dd')[7].innerText;
+        return { "name": name, "factory": factory, "type": type };
+    } catch {
+        return {};
+    }
+}
+
+
+
 // 連結background.js
-chrome.runtime.connect({ name: "popup" });
+// const port = chrome.runtime.connect({ name: "popup" });
+// chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+//     console.log(message);
+//     sendResponse({
+//         data: "I am fine, thank you. How is life in the background?"
+//     });
+// });
+
 
 // 建立安全連線後，連線按鈕消失
 var connected = fetch("https://172.30.202.88:5000/", {
@@ -54,16 +96,20 @@ function saveERP(e) {
     localStorage.setItem('erp', erp_input.value);
     localStorage.setItem('factory', factory_input.checked.toString());
     localStorage.setItem('product_type', product_type_input.checked.toString());
+    getLocalStorage();
 }
-erp_input.value = localStorage.getItem('erp');
-factory_input.checked = localStorage.getItem('factory') == 'true' ? true : false;
-product_type_input.checked = localStorage.getItem('product_type') == 'true' ? true : false;
-name_result_color.style.backgroundColor = localStorage.getItem('name_result_color');
-name_result_text.innerText = localStorage.getItem('name_result_text');
-name_check_output_box.innerText = localStorage.getItem('name_check_output');
-bom_result_color.style.backgroundColor = localStorage.getItem('bom_result_color');
-bom_result_text.innerText = localStorage.getItem('bom_result_text');
-bom_check_output_box.innerText = localStorage.getItem('bom_check_output');
+
+function getLocalStorage() {
+    erp_input.value = localStorage.getItem('erp');
+    factory_input.checked = localStorage.getItem('factory') == 'true' ? true : false;
+    product_type_input.checked = localStorage.getItem('product_type') == 'true' ? true : false;
+    name_result_color.style.backgroundColor = localStorage.getItem('name_result_color');
+    name_result_text.innerText = localStorage.getItem('name_result_text');
+    name_check_output_box.innerText = localStorage.getItem('name_check_output');
+    bom_result_color.style.backgroundColor = localStorage.getItem('bom_result_color');
+    bom_result_text.innerText = localStorage.getItem('bom_result_text');
+    bom_check_output_box.innerText = localStorage.getItem('bom_check_output');
+}
 
 // 主要程式
 submit_button.addEventListener("click", async (e) => {
@@ -99,7 +145,6 @@ submit_button.addEventListener("click", async (e) => {
             localStorage.setItem('bom_check_output', analyze_result[0].result.BOM_check_result.extra_problem);
             bom_check_output_box.innerText = localStorage.getItem('bom_check_output');
         });
-
 });
 
 function analyze(erp, factory, product_type) {
