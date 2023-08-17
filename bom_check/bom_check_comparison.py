@@ -20,6 +20,13 @@ class bom_status:
     def get_qty(self) -> int:
         return int(self.state['Qty'])
 
+def bom_modifier(bom: list):
+    '''把未來可能出貨的產品改成已出產產品的料號'''
+    for bom_item in bom:
+        if bom_item['itemNumber'] == '58-99530-000E':
+            bom_item['itemNumber'] = '58-99530-0000'
+    return bom
+
 def check_erp_in_bom(bom: list, all_name_check_result: dict, extra_problem: str) -> tuple[list, str]:
     '''檢查ERP name展示的料號是否出現在BOM裡'''
     for item in all_name_check_result.values():

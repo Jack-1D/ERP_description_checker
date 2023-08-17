@@ -14,6 +14,8 @@ def BOM_checker(cursor: Cursor, factory: str, bom: list, product_type: str, all_
     graphiccard = all_name_check_result['graphiccard']['name'] if "graphiccard" in all_name_check_result and all_name_check_result['graphiccard']['status'] else None
     # 增加result至BOM中
     bom = [{**item, "result":"uncheck"} for item in bom]
+    # 把BOM裡的料號改掉
+    bom = bom_modifier(bom)
     # 檢查ERP name展示的料號是否出現在BOM裡
     bom, extra_problem = check_erp_in_bom(bom, all_name_check_result, extra_problem)
     # 檢查必帶料

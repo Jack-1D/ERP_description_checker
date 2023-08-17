@@ -1,3 +1,6 @@
+'''
+處理路由:flask主程式
+'''
 from flask import Flask, request
 from flask_cors import CORS
 from search import main_checker

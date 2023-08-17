@@ -1,3 +1,6 @@
+'''
+連接database
+'''
 import mysql.connector
 from typing import NewType
 
