@@ -12,6 +12,19 @@ const bom_result_color = document.getElementById("bom_result");
 const bom_result_text = document.getElementById("bom_result_text");
 const bom_check_output_box = document.getElementById("bom_check_error");
 
+// 裡面有ip_address的promise
+var ip_address = "";
+var rawFile = new XMLHttpRequest();
+rawFile.open("GET", "../Server_Address.txt", false);
+rawFile.onreadystatechange = function () {
+    if (rawFile.readyState === 4) {
+        if (rawFile.status === 200 || rawFile.status == 0) {
+            ip_address = rawFile.responseText;
+        }
+    }
+}
+rawFile.send(null);
+
 // 自動抓取網頁上的ERP description、factory、type
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.scripting.executeScript({
@@ -49,7 +62,7 @@ function getElement() {
 const port = chrome.runtime.connect({ name: "popup" });
 
 // 建立安全連線後，連線按鈕消失
-var connected = fetch("https://172.30.202.88:5000/", {
+var connected = fetch(ip_address, {
     method: 'GET',
     headers: { "Content-type": "application/x-www-form-urlencoded; charset=UTF-8" }
 })
@@ -65,8 +78,8 @@ connect_button.addEventListener("click", async (e) => {
     openURL();
 });
 function openURL() {
-    window.open("https://172.30.202.88:5000/");
-    connected = fetch("https://172.30.202.88:5000/", {
+    window.open(ip_address);
+    connected = fetch(ip_address, {
         method: 'GET',
         headers: { "Content-type": "application/x-www-form-urlencoded; charset=UTF-8" }
     })
@@ -109,7 +122,7 @@ submit_button.addEventListener("click", async (e) => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: analyze,
-        args: [erp_input.value, factory_input.checked ? "TPMC" : "SHMC", product_type_input.checked ? "1" : "0"]
+        args: [ip_address, erp_input.value, factory_input.checked ? "TPMC" : "SHMC", product_type_input.checked ? "1" : "0"]
     },
         (analyze_result) => {
             let name_check_result = true;
@@ -138,7 +151,7 @@ submit_button.addEventListener("click", async (e) => {
         });
 });
 
-function analyze(erp, factory, product_type) {
+function analyze(ip_address, erp, factory, product_type) {
     var BOM = [];
     var Item = document.getElementById("ITEMTABLE_BOM").getElementsByClassName("GMPageOne")[1].getElementsByClassName("GMSection")[0].getElementsByTagName("tbody")[0].children;
     for (var i = 0; i < Item.length; i++) {
@@ -158,7 +171,7 @@ function analyze(erp, factory, product_type) {
     console.clear();
     console.log(BOM);
 
-    check_result = fetch("https://172.30.202.88:5000/", {
+    check_result = fetch(ip_address, {
         method: 'POST',
         headers: { "Content-type": "application/x-www-form-urlencoded; charset=UTF-8" },
         body: JSON.stringify({

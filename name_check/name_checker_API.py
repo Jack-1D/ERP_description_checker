@@ -32,7 +32,7 @@ def name_checker(cursor: Cursor, name: str, factory: str) -> tuple:
     check_devices = check_devices.split(",")
     check_devices = [device.replace(" ","") for device in check_devices]
     # 把需要忽略的判斷拿掉
-    ignore = ["PCI","DI","line-out/mic-in","TPM2.0","MXM"]
+    ignore = ["PCI","DI","line-out/mic-in","TPM2.0","MXM","DP"]
     mb_check_devices = [device for device in check_devices if all(ignore_item not in device for ignore_item in ignore)]
     print(mb_check_devices)
     # 拆分物件和數量
