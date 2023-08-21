@@ -26,4 +26,4 @@ python app.py
 ### 操作說明
 到瀏覽器的擴充功能開啟開發人員模式，並將這個repo以未封裝項目載入。
 下圖以Google chrome作為範例:
-![](https://hackmd.io/_uploads/S1tOy4xT2.png)
+![](https://github.com/Jack-1D/ERP_description_checker/blob/5ddc16127197b0581ceedd5b509e7d15ada7422c/README%20images/chrome.png)
