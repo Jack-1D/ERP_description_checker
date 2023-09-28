@@ -1,5 +1,5 @@
 # ERP_description_checker
-check 93 ERP description
+(實習專案) check 93 ERP description
 ### Setting up the environment (Windows)
 
 ``` bash
